@@ -162,8 +162,8 @@ class SCFpyr_Keras(keras.layers.Layer):
         hi0mask = tf.expand_dims(tf.expand_dims(hi0mask, 0), -1)
 
         # Fourier transform (2D) and shifting
-        batch_dft = tf_fft2d(im_batch)
-        batch_dft = tf_fftshift2d(batch_dft)
+        batch_dft = tf.signal.fft2d(tf.cast(im_batch, tf.complex64))
+        batch_dft = batch_fftshift2d(batch_dft)
 
         # Low-pass
         lo0dft = batch_dft * tf.cast(lo0mask, tf.complex64)
@@ -173,8 +173,8 @@ class SCFpyr_Keras(keras.layers.Layer):
 
         # High-pass
         hi0dft = batch_dft * tf.cast(hi0mask, tf.complex64)
-        hi0 = tf_ifftshift2d(hi0dft)
-        hi0 = tf_ifft2d(hi0)
+        hi0 = batch_ifftshift2d(hi0dft)
+        hi0 = tf.signal.ifft2d(hi0)
         hi0_real = tf.math.real(hi0)
         coeff.insert(0, hi0_real)
         
@@ -196,8 +196,8 @@ class SCFpyr_Keras(keras.layers.Layer):
         """
         if height <= 1:
             # Low-pass
-            lo0 = tf_ifftshift2d(lodft)
-            lo0 = tf_ifft2d(lo0)
+            lo0 = batch_ifftshift2d(lodft)
+            lo0 = tf.signal.ifft2d(lo0)
             lo0_real = tf.math.real(lo0)
             coeff = [lo0_real]
         else:
@@ -229,8 +229,8 @@ class SCFpyr_Keras(keras.layers.Layer):
                 # (x+yi)(u+vi) = (xu-yv) + (xv+yu)i
                 banddft = banddft * self.complex_fact_construct_tf
 
-                band = tf_ifftshift2d(banddft)
-                band = tf_ifft2d(band)
+                band = batch_ifftshift2d(banddft)
+                band = tf.signal.ifft2d(band)
                 orientations.append(band)
 
             ####################################################################
@@ -301,13 +301,13 @@ class SCFpyr_Keras(keras.layers.Layer):
         # Start recursive reconstruction
         tempdft = self._reconstruct_levels(coeff[1:], log_rad, Xrcos, Yrcos, angle)
 
-        hidft = tf_fft2d(coeff[0])
-        hidft = tf_fftshift2d(hidft)
+        hidft = tf.signal.fft2d(tf.cast(coeff[0], tf.complex64))
+        hidft = batch_fftshift2d(hidft)
 
         outdft = tempdft * tf.cast(lo0mask, tf.complex64) + hidft * tf.cast(hi0mask, tf.complex64)
 
-        reconstruction = tf_ifftshift2d(outdft)
-        reconstruction = tf_ifft2d(reconstruction)
+        reconstruction = batch_ifftshift2d(outdft)
+        reconstruction = tf.signal.ifft2d(reconstruction)
         reconstruction = tf.math.real(reconstruction)  # Take real part
 
         return reconstruction
@@ -326,8 +326,8 @@ class SCFpyr_Keras(keras.layers.Layer):
             Reconstructed DFT coefficients
         """
         if len(coeff) == 1:
-            dft = tf_fft2d(coeff[0])
-            dft = tf_fftshift2d(dft)
+            dft = tf.signal.fft2d(tf.cast(coeff[0], tf.complex64))
+            dft = batch_fftshift2d(dft)
             return dft
 
         Xrcos = Xrcos - np.log2(self.scale_factor)
@@ -352,8 +352,8 @@ class SCFpyr_Keras(keras.layers.Layer):
             anglemask = tf.constant(anglemask, dtype=tf.float32)
             anglemask = tf.expand_dims(tf.expand_dims(anglemask, 0), -1)
 
-            banddft = tf_fft2d(coeff[0][b])
-            banddft = tf_fftshift2d(banddft)
+            banddft = tf.signal.fft2d(tf.cast(coeff[0][b], tf.complex64))
+            banddft = batch_fftshift2d(banddft)
 
             banddft = banddft * tf.cast(anglemask, tf.complex64) * tf.cast(himask, tf.complex64)
             banddft = banddft * self.complex_fact_reconstruct_tf

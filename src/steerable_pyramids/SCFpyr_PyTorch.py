@@ -18,7 +18,7 @@ from __future__ import print_function
 
 import numpy as np
 import torch
-from scipy.misc import factorial
+from math import factorial
 
 import steerable.math_utils as math_utils
 pointOp = math_utils.pointOp

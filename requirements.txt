@@ -2,5 +2,8 @@ six
 numpy
 scipy
 torch >= 0.4.0
+tensorflow >= 2.15.0
+keras >= 3.0.0
 matplotlib
 pillow
+scikit-image

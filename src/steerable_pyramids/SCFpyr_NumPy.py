@@ -17,9 +17,12 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
-from scipy.misc import factorial
+from math import factorial
 
-import steerable.math_utils as math_utils
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from utils import math_utils
 pointOp = math_utils.pointOp
         
 ################################################################################
@@ -131,7 +134,7 @@ class SCFpyr_NumPy():
             orientations = []
             for b in range(self.nbands):
                 anglemask = pointOp(angle, Ycosn, self.Xcosn + np.pi*b/self.nbands)
-                banddft = np.power(np.complex(0, -1), self.nbands - 1) * lodft * anglemask * himask
+                banddft = np.power(complex(0, -1), self.nbands - 1) * lodft * anglemask * himask
                 band = np.fft.ifft2(np.fft.ifftshift(banddft))
                 orientations.append(band)
 
@@ -221,7 +224,7 @@ class SCFpyr_NumPy():
             anglemask = pointOp(angle, Ycosn, Xcosn + np.pi * b/self.nbands)
             banddft = np.fft.fft2(coeff[0][b])
             banddft = np.fft.fftshift(banddft)
-            orientdft = orientdft + np.power(np.complex(0, 1), order) * banddft * anglemask * himask
+            orientdft = orientdft + np.power(complex(0, 1), order) * banddft * anglemask * himask
 
         ####################################################################
         ########## Lowpass component are upsampled and convoluted ##########
